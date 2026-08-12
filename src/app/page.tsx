@@ -25,6 +25,8 @@ import NumericInput from "@/components/NumericInput";
 
 import WithdrawalSimulator from "@/components/WithdrawalSimulator";
 
+import SavedSimulations from "@/components/SavedSimulations";
+
 // =========================
 // タブ
 // =========================
@@ -254,9 +256,30 @@ export default function Home() {
       )
     );
 
-    setHasContributionError(
-      false
+    setHasContributionError(false);
+  };
+
+  // =========================
+  // お気に入り条件を使用
+  // =========================
+
+  const loadSavedSimulation = (
+    state: SimulationState
+  ) => {
+    saveCurrentState();
+
+    restoreState(state);
+
+    setShowYearlyTable(false);
+
+    setActiveTab(
+      "simulation"
     );
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
   // =========================
@@ -284,8 +307,7 @@ export default function Home() {
 
       window.scrollTo({
         top: 0,
-        behavior:
-          "smooth",
+        behavior: "smooth",
       });
     };
 
@@ -311,16 +333,12 @@ export default function Home() {
 
       window.scrollTo({
         top: 0,
-        behavior:
-          "smooth",
+        behavior: "smooth",
       });
     };
 
   // =========================
   // 積立設定 → 月単位
-  //
-  // 終了年が空白の場合は
-  // 運用期間の最後まで
   // =========================
 
   const contributionPeriods =
@@ -433,20 +451,17 @@ export default function Home() {
         (
           latest,
           current
-        ) => {
-          const latestEnd =
-            latest.endYear ??
-            years;
-
-          const currentEnd =
+        ) =>
+          (
             current.endYear ??
-            years;
-
-          return currentEnd >
-            latestEnd
+            years
+          ) >
+          (
+            latest.endYear ??
+            years
+          )
             ? current
-            : latest;
-        }
+            : latest
       );
     };
 
@@ -487,8 +502,7 @@ export default function Home() {
 
       window.scrollTo({
         top: 0,
-        behavior:
-          "smooth",
+        behavior: "smooth",
       });
     };
 
@@ -514,8 +528,7 @@ export default function Home() {
 
       window.scrollTo({
         top: 0,
-        behavior:
-          "smooth",
+        behavior: "smooth",
       });
     };
 
@@ -535,8 +548,7 @@ export default function Home() {
         );
 
       if (
-        extensionYears <=
-        0
+        extensionYears <= 0
       ) {
         return;
       }
@@ -565,9 +577,6 @@ export default function Home() {
               return current;
             }
 
-            // 最後の終了年が空欄なら、
-            // years変更後も自動的に
-            // 新しい最終年まで継続する
             if (
               lastSetting.endYear ===
               null
@@ -604,8 +613,7 @@ export default function Home() {
 
       window.scrollTo({
         top: 0,
-        behavior:
-          "smooth",
+        behavior: "smooth",
       });
     };
 
@@ -673,8 +681,6 @@ export default function Home() {
               return increasedSettings;
             }
 
-            // 最後が空欄なら
-            // 自動的に延長される
             if (
               lastSetting.endYear ===
               null
@@ -702,8 +708,7 @@ export default function Home() {
       }
 
       if (
-        extensionYears >
-        0
+        extensionYears > 0
       ) {
         setYears(
           newYears
@@ -716,8 +721,7 @@ export default function Home() {
 
       window.scrollTo({
         top: 0,
-        behavior:
-          "smooth",
+        behavior: "smooth",
       });
     };
 
@@ -730,33 +734,25 @@ export default function Home() {
     label: string;
   }[] = [
     {
-      id:
-        "simulation",
-
+      id: "simulation",
       label:
         "シミュレーション",
     },
 
     {
-      id:
-        "whatif",
-
+      id: "whatif",
       label:
         "もしも？",
     },
 
     {
-      id:
-        "goal",
-
+      id: "goal",
       label:
         "目標設定",
     },
 
     {
-      id:
-        "withdrawal",
-
+      id: "withdrawal",
       label:
         "取り崩し",
     },
@@ -765,6 +761,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-slate-50 p-4 text-slate-900 md:p-10">
       <div className="mx-auto max-w-5xl">
+
         {/* =========================
             ヘッダー
         ========================= */}
@@ -775,7 +772,7 @@ export default function Home() {
               資産シミュレーター
             </h1>
 
-            <p className="mt-2 text-sm text-slate-500 sm:text-base">
+            <p className="mt-2 text-slate-500">
               積立から取り崩しまで、将来の資産を確認
             </p>
           </div>
@@ -826,6 +823,8 @@ export default function Home() {
 
         {/* =========================
             タブ
+            スマホ 2×2
+            PC 1×4
         ========================= */}
 
         <div className="mt-8 rounded-2xl bg-slate-200/70 p-1.5">
@@ -877,12 +876,16 @@ export default function Home() {
         {activeTab ===
           "simulation" && (
           <div>
+
+            {/* 条件 */}
+
             <section className="mt-6 rounded-3xl bg-white p-6 shadow-sm md:p-8">
               <h2 className="text-xl font-bold">
                 シミュレーション条件
               </h2>
 
               <div className="mt-6 grid gap-6 md:grid-cols-2">
+
                 <label>
                   <span className="mb-2 block text-sm font-medium text-slate-600">
                     現在の資産
@@ -972,9 +975,7 @@ export default function Home() {
                 </label>
               </div>
 
-              {/* =========================
-                  積立途中変更
-              ========================= */}
+              {/* 積立途中変更 */}
 
               <div className="mt-8 border-t border-slate-100 pt-6">
                 <label className="flex cursor-pointer items-start gap-3 sm:items-center">
@@ -985,41 +986,13 @@ export default function Home() {
                       useCustomContributions
                     }
 
-                    onChange={(
-                      event
-                    ) => {
+                    onChange={(e) => {
                       const checked =
-                        event.target.checked;
+                        e.target.checked;
 
                       setUseCustomContributions(
                         checked
                       );
-
-                      // =========================
-                      // 初めてONにした時、
-                      // 積立設定1を自動作成
-                      // =========================
-
-                      if (
-                        checked &&
-                        contributionSettings.length ===
-                          0
-                      ) {
-                        setContributionSettings(
-                          [
-                            {
-                              startYear:
-                                1,
-
-                              endYear:
-                                null,
-
-                              monthlyAmount:
-                                monthlyContribution,
-                            },
-                          ]
-                        );
-                      }
 
                       if (
                         !checked
@@ -1064,11 +1037,19 @@ export default function Home() {
               </div>
             </section>
 
+            <SavedSimulations
+              currentState={
+                getCurrentState()
+              }
+
+              onLoad={
+                loadSavedSimulation
+              }
+            />
+
             {result ? (
               <>
-                {/* =========================
-                    結果
-                ========================= */}
+                {/* 結果 */}
 
                 <section className="mt-6 rounded-3xl bg-slate-900 p-6 text-white shadow-sm md:p-8">
                   <p className="text-sm text-slate-400">
@@ -1109,9 +1090,7 @@ export default function Home() {
                   </div>
                 </section>
 
-                {/* =========================
-                    資産推移
-                ========================= */}
+                {/* 資産推移 */}
 
                 <section className="mt-6 rounded-3xl bg-white p-5 shadow-sm sm:p-6 md:p-8">
                   <div>
@@ -1134,7 +1113,7 @@ export default function Home() {
                 </section>
 
                 {/* =========================
-                    年ごとの資産一覧
+                    年ごとの一覧
                 ========================= */}
 
                 <section className="mt-6 overflow-hidden rounded-3xl bg-white shadow-sm">
@@ -1143,9 +1122,7 @@ export default function Home() {
 
                     onClick={() =>
                       setShowYearlyTable(
-                        (
-                          current
-                        ) =>
+                        (current) =>
                           !current
                       )
                     }
@@ -1158,28 +1135,12 @@ export default function Home() {
                       </h2>
 
                       <p className="mt-1 text-sm text-slate-500">
-                        各年の資産残高と運用状況を確認
+                        各年末時点の総資産・元本・運用益を確認
                       </p>
                     </div>
 
-                    <span
-                      className="
-                        flex
-                        h-8
-                        w-8
-                        shrink-0
-                        items-center
-                        justify-center
-                        text-2xl
-                        font-medium
-                        leading-none
-                        text-slate-400
-                      "
-                      aria-hidden="true"
-                    >
-                      {showYearlyTable
-                        ? "−"
-                        : "+"}
+                    <span className="shrink-0 text-2xl font-medium text-slate-400">
+                      {showYearlyTable ? "−" : "+"}
                     </span>
                   </button>
 
