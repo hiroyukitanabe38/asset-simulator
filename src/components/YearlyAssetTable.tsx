@@ -30,8 +30,34 @@ export default function YearlyAssetTable({
           スマホ版
       ========================= */}
 
-      <div className="md:hidden">
-        <div className="grid grid-cols-[0.8fr_1.2fr_1.2fr] gap-2 border-b border-slate-200 px-1 pb-3 text-sm font-medium text-slate-500">
+      <div
+        className="
+          max-h-[70vh]
+          overflow-y-auto
+          md:hidden
+        "
+      >
+
+        {/* ヘッダー固定 */}
+
+        <div
+          className="
+            sticky
+            top-0
+            z-20
+            grid
+            grid-cols-[0.8fr_1.2fr_1.2fr]
+            gap-2
+            border-b
+            border-slate-200
+            bg-white
+            px-1
+            py-3
+            text-sm
+            font-medium
+            text-slate-500
+          "
+        >
           <div>
             年
           </div>
@@ -45,6 +71,8 @@ export default function YearlyAssetTable({
           </div>
         </div>
 
+        {/* 本文 */}
+
         <div>
           {data.map(
             (row) => (
@@ -52,7 +80,15 @@ export default function YearlyAssetTable({
                 key={
                   row.year
                 }
-                className="grid grid-cols-[0.8fr_1.2fr_1.2fr] gap-2 border-b border-slate-100 px-1 py-4"
+                className="
+                  grid
+                  grid-cols-[0.8fr_1.2fr_1.2fr]
+                  gap-2
+                  border-b
+                  border-slate-100
+                  px-1
+                  py-4
+                "
               >
                 <div className="font-bold text-slate-900">
                   {row.year}
@@ -90,29 +126,101 @@ export default function YearlyAssetTable({
           PC版
       ========================= */}
 
-      <div className="hidden md:block">
+      <div
+        className="
+          hidden
+          max-h-[70vh]
+          overflow-auto
+          md:block
+        "
+      >
         <table className="w-full table-fixed border-collapse">
+
+          {/* ヘッダー固定 */}
+
           <thead>
-            <tr className="border-b border-slate-200 text-left text-sm text-slate-500">
-              <th className="w-[15%] px-4 py-3">
+            <tr className="text-left text-sm text-slate-500">
+
+              <th
+                className="
+                  sticky
+                  top-0
+                  z-20
+                  w-[15%]
+                  border-b
+                  border-slate-200
+                  bg-white
+                  px-4
+                  py-3
+                "
+              >
                 年
               </th>
 
-              <th className="w-[22%] px-4 py-3">
+              <th
+                className="
+                  sticky
+                  top-0
+                  z-20
+                  w-[22%]
+                  border-b
+                  border-slate-200
+                  bg-white
+                  px-4
+                  py-3
+                "
+              >
                 総資産
               </th>
 
-              <th className="w-[22%] px-4 py-3">
+              <th
+                className="
+                  sticky
+                  top-0
+                  z-20
+                  w-[22%]
+                  border-b
+                  border-slate-200
+                  bg-white
+                  px-4
+                  py-3
+                "
+              >
                 元本
               </th>
 
-              <th className="w-[22%] px-4 py-3">
+              <th
+                className="
+                  sticky
+                  top-0
+                  z-20
+                  w-[22%]
+                  border-b
+                  border-slate-200
+                  bg-white
+                  px-4
+                  py-3
+                "
+              >
                 運用益
               </th>
 
-              <th className="w-[19%] px-4 py-3">
+              <th
+                className="
+                  sticky
+                  top-0
+                  z-20
+                  w-[19%]
+                  border-b
+                  border-slate-200
+                  bg-white
+                  px-4
+                  py-3
+                "
+              >
                 運用益率
               </th>
+
             </tr>
           </thead>
 

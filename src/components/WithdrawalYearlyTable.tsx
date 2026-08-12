@@ -6,11 +6,9 @@ import type {
   WithdrawalYearlyResult,
 } from "@/lib/finance/calculator";
 
-
 type DisplayMode =
   | "age"
   | "year";
-
 
 type WithdrawalYearlyTableProps = {
   data: WithdrawalYearlyResult[];
@@ -19,7 +17,6 @@ type WithdrawalYearlyTableProps = {
 
   withdrawalStartAge: number;
 };
-
 
 const formatManYen = (
   value: number
@@ -30,7 +27,6 @@ const formatManYen = (
     "ja-JP"
   )}万円`;
 
-
 const formatYen = (
   value: number
 ) =>
@@ -40,7 +36,6 @@ const formatYen = (
     "ja-JP"
   )}円`;
 
-
 export default function WithdrawalYearlyTable({
   data,
   displayMode,
@@ -49,10 +44,8 @@ export default function WithdrawalYearlyTable({
   const [isOpen, setIsOpen] =
     useState(false);
 
-
   return (
     <div className="mt-8">
-
 
       {/* =========================
           タイトル・折りたたみ
@@ -101,7 +94,6 @@ export default function WithdrawalYearlyTable({
         </span>
       </button>
 
-
       {/* =========================
           折りたたみ内容
       ========================= */}
@@ -109,17 +101,39 @@ export default function WithdrawalYearlyTable({
       {isOpen && (
         <>
 
-
           {/* =========================
               スマホ版
           ========================= */}
 
-          <div className="mt-5 md:hidden">
+          <div
+            className="
+              mt-5
+              max-h-[70vh]
+              overflow-y-auto
+              md:hidden
+            "
+          >
 
+            {/* ヘッダー固定 */}
 
-            {/* ヘッダー */}
-
-            <div className="grid grid-cols-[0.8fr_1.15fr_1.3fr] gap-2 border-b border-slate-200 pb-3 text-sm font-medium text-slate-500">
+            <div
+              className="
+                sticky
+                top-0
+                z-20
+                grid
+                grid-cols-[0.8fr_1.15fr_1.3fr]
+                gap-2
+                border-b
+                border-slate-200
+                bg-white
+                px-1
+                py-3
+                text-sm
+                font-medium
+                text-slate-500
+              "
+            >
               <div>
                 {displayMode ===
                 "age"
@@ -136,7 +150,6 @@ export default function WithdrawalYearlyTable({
               </div>
             </div>
 
-
             {/* 本文 */}
 
             <div>
@@ -151,7 +164,6 @@ export default function WithdrawalYearlyTable({
                     row.year -
                     1;
 
-
                   return (
                     <div
                       key={
@@ -163,6 +175,7 @@ export default function WithdrawalYearlyTable({
                         gap-2
                         border-b
                         border-slate-100
+                        px-1
                         py-4
                         ${
                           depleted
@@ -178,7 +191,6 @@ export default function WithdrawalYearlyTable({
                           : `${row.year}年目`}
                       </div>
 
-
                       <div
                         className={`font-bold ${
                           depleted
@@ -190,7 +202,6 @@ export default function WithdrawalYearlyTable({
                           row.endAssets
                         )}
                       </div>
-
 
                       <div className="text-slate-700">
                         {formatYen(
@@ -204,51 +215,128 @@ export default function WithdrawalYearlyTable({
             </div>
           </div>
 
-
           {/* =========================
               PC版
           ========================= */}
 
-          <div className="mt-5 hidden w-full overflow-x-auto md:block">
+          <div
+            className="
+              mt-5
+              hidden
+              max-h-[70vh]
+              w-full
+              overflow-auto
+              md:block
+            "
+          >
             <table className="w-full min-w-[760px] table-fixed border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200 text-left text-sm text-slate-500">
 
-                  <th className="w-[10%] px-3 py-3">
+              {/* ヘッダー固定 */}
+
+              <thead>
+                <tr className="text-left text-sm text-slate-500">
+
+                  <th
+                    className="
+                      sticky
+                      top-0
+                      z-20
+                      w-[10%]
+                      border-b
+                      border-slate-200
+                      bg-white
+                      px-3
+                      py-3
+                    "
+                  >
                     {displayMode ===
                     "age"
                       ? "年齢"
                       : "年"}
                   </th>
 
-
-                  <th className="w-[18%] px-3 py-3">
+                  <th
+                    className="
+                      sticky
+                      top-0
+                      z-20
+                      w-[18%]
+                      border-b
+                      border-slate-200
+                      bg-white
+                      px-3
+                      py-3
+                    "
+                  >
                     年初残高
                   </th>
 
-
-                  <th className="w-[18%] px-3 py-3">
+                  <th
+                    className="
+                      sticky
+                      top-0
+                      z-20
+                      w-[18%]
+                      border-b
+                      border-slate-200
+                      bg-white
+                      px-3
+                      py-3
+                    "
+                  >
                     月額取り崩し
                   </th>
 
-
-                  <th className="w-[18%] px-3 py-3">
+                  <th
+                    className="
+                      sticky
+                      top-0
+                      z-20
+                      w-[18%]
+                      border-b
+                      border-slate-200
+                      bg-white
+                      px-3
+                      py-3
+                    "
+                  >
                     年間取り崩し額
                   </th>
 
-
-                  <th className="w-[18%] px-3 py-3">
+                  <th
+                    className="
+                      sticky
+                      top-0
+                      z-20
+                      w-[18%]
+                      border-b
+                      border-slate-200
+                      bg-white
+                      px-3
+                      py-3
+                    "
+                  >
                     年間運用益
                   </th>
 
-
-                  <th className="w-[18%] px-3 py-3">
+                  <th
+                    className="
+                      sticky
+                      top-0
+                      z-20
+                      w-[18%]
+                      border-b
+                      border-slate-200
+                      bg-white
+                      px-3
+                      py-3
+                    "
+                  >
                     年末残高
                   </th>
 
                 </tr>
               </thead>
-
 
               <tbody>
                 {data.map(
@@ -261,7 +349,6 @@ export default function WithdrawalYearlyTable({
                       withdrawalStartAge +
                       row.year -
                       1;
-
 
                     return (
                       <tr
@@ -286,13 +373,11 @@ export default function WithdrawalYearlyTable({
                             : `${row.year}年目`}
                         </td>
 
-
                         <td className="whitespace-nowrap px-3 py-4">
                           {formatManYen(
                             row.startAssets
                           )}
                         </td>
-
 
                         <td className="whitespace-nowrap px-3 py-4">
                           {formatYen(
@@ -300,14 +385,12 @@ export default function WithdrawalYearlyTable({
                           )}
                         </td>
 
-
                         <td className="whitespace-nowrap px-3 py-4 font-medium text-amber-600">
                           -
                           {formatManYen(
                             row.yearlyWithdrawal
                           )}
                         </td>
-
 
                         <td
                           className={`
@@ -332,7 +415,6 @@ export default function WithdrawalYearlyTable({
                             row.investmentProfit
                           )}
                         </td>
-
 
                         <td
                           className={`
@@ -359,7 +441,6 @@ export default function WithdrawalYearlyTable({
               </tbody>
             </table>
           </div>
-
 
           {/* =========================
               補足
