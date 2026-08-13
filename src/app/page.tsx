@@ -748,7 +748,7 @@ export default function Home() {
     {
       id: "goal",
       label:
-        "目標設定",
+        "どれくらい？",
     },
 
     {
@@ -888,7 +888,7 @@ export default function Home() {
 
                 <label>
                   <span className="mb-2 block text-sm font-medium text-slate-600">
-                    現在の資産
+                    現在の運用資産
                   </span>
 
                   <NumericInput
@@ -1237,7 +1237,7 @@ export default function Home() {
         )}
 
         {/* ======================================
-            ③ 目標設定
+            ③ どれくらい？
         ====================================== */}
 
         {activeTab ===

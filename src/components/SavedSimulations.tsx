@@ -468,7 +468,7 @@ export default function SavedSimulations({
                 <div className="mt-4 grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
                   <div>
                     <p className="text-slate-400">
-                      現在資産
+                      現在の運用資産
                     </p>
 
                     <p className="mt-1 break-words font-bold">
