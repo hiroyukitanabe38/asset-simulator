@@ -151,9 +151,11 @@ const formatInputValue = (value: string) => {
   const isNegative = value.startsWith("-");
   const unsignedValue = isNegative ? value.slice(1) : value;
   const [integerPart, decimalPart] = unsignedValue.split(".");
+
   const formattedInteger = integerPart
     ? Number(integerPart).toLocaleString("ja-JP")
     : "0";
+
   const sign = isNegative ? "-" : "";
 
   if (value.includes(".")) {
@@ -169,6 +171,7 @@ const parseInputValue = (value: string) => {
   }
 
   const parsed = Number(value);
+
   return Number.isFinite(parsed) ? parsed : null;
 };
 
@@ -182,13 +185,15 @@ function FixedField({
   allowNegative = false,
   onChange,
 }: FixedFieldProps) {
-  const handleInput = (value: string) => {
-    onChange(sanitizeNumber(value, allowDecimal, allowNegative));
+  const handleInput = (nextValue: string) => {
+    onChange(sanitizeNumber(nextValue, allowDecimal, allowNegative));
   };
 
   return (
     <div>
-      <p className="mb-2 text-sm font-medium text-slate-600">{label}</p>
+      <p className="mb-2 text-sm font-medium text-slate-600">
+        {label}
+      </p>
 
       {isAnswer ? (
         <div className="flex min-h-[68px] items-center justify-center rounded-xl border-2 border-amber-300 bg-amber-50 text-3xl font-bold text-amber-500 shadow-sm">
@@ -210,7 +215,9 @@ function FixedField({
             className="min-w-0 flex-1 bg-transparent text-lg font-medium text-slate-900 outline-none placeholder:text-slate-300"
           />
 
-          <span className="ml-3 shrink-0 text-slate-500">{suffix}</span>
+          <span className="ml-3 shrink-0 text-slate-500">
+            {suffix}
+          </span>
         </div>
       )}
     </div>
@@ -304,7 +311,9 @@ export default function GoalSetting({
   };
 
   const calculate = () => {
-    const parsedInitialAssets = parseInputValue(currentInputs.initialAssets);
+    const parsedInitialAssets = parseInputValue(
+      currentInputs.initialAssets,
+    );
 
     const parsedMonthlyContribution = parseInputValue(
       currentInputs.monthlyContribution,
@@ -315,26 +324,40 @@ export default function GoalSetting({
     );
 
     const parsedYears = parseInputValue(currentInputs.years);
-    const parsedTargetAssets = parseInputValue(currentInputs.targetAssets);
+
+    const parsedTargetAssets = parseInputValue(
+      currentInputs.targetAssets,
+    );
+
     const validationErrors: string[] = [];
 
     if (parsedInitialAssets === null) {
-      validationErrors.push("現在の運用資産を入力してください。");
+      validationErrors.push(
+        "現在の運用資産を入力してください。",
+      );
     } else if (parsedInitialAssets < 0) {
-      validationErrors.push("現在の運用資産は0円以上で入力してください。");
+      validationErrors.push(
+        "現在の運用資産は0円以上で入力してください。",
+      );
     }
 
     if (mode !== "requiredMonthly") {
       if (parsedMonthlyContribution === null) {
-        validationErrors.push("毎月の積立額を入力してください。");
+        validationErrors.push(
+          "毎月の積立額を入力してください。",
+        );
       } else if (parsedMonthlyContribution < 0) {
-        validationErrors.push("毎月の積立額は0円以上で入力してください。");
+        validationErrors.push(
+          "毎月の積立額は0円以上で入力してください。",
+        );
       }
     }
 
     if (mode !== "requiredReturn") {
       if (parsedAnnualReturnPercent === null) {
-        validationErrors.push("想定年利を入力してください。");
+        validationErrors.push(
+          "想定年利を入力してください。",
+        );
       } else if (
         parsedAnnualReturnPercent < -20 ||
         parsedAnnualReturnPercent > 30
@@ -347,20 +370,28 @@ export default function GoalSetting({
 
     if (mode !== "requiredDuration") {
       if (parsedYears === null) {
-        validationErrors.push("運用期間を入力してください。");
+        validationErrors.push(
+          "運用期間を入力してください。",
+        );
       } else if (
         !Number.isInteger(parsedYears) ||
         parsedYears < 1 ||
         parsedYears > 99
       ) {
-        validationErrors.push("運用期間を1〜99年の整数で入力してください。");
+        validationErrors.push(
+          "運用期間を1〜99年の整数で入力してください。",
+        );
       }
     }
 
     if (parsedTargetAssets === null) {
-      validationErrors.push("目標金額を入力してください。");
+      validationErrors.push(
+        "目標金額を入力してください。",
+      );
     } else if (parsedTargetAssets <= 0) {
-      validationErrors.push("目標金額は1円以上で入力してください。");
+      validationErrors.push(
+        "目標金額は1円以上で入力してください。",
+      );
     }
 
     if (validationErrors.length > 0) {
@@ -370,14 +401,15 @@ export default function GoalSetting({
     }
 
     if (mode === "requiredMonthly") {
-      const calculatedMonthly = calculateRequiredMonthlyContribution(
-        parsedTargetAssets as number,
-        parsedInitialAssets as number,
-        (parsedAnnualReturnPercent as number) / 100,
-        parsedYears as number,
-        0,
-        NO_CONTRIBUTION_PERIODS,
-      );
+      const calculatedMonthly =
+        calculateRequiredMonthlyContribution(
+          parsedTargetAssets as number,
+          parsedInitialAssets as number,
+          (parsedAnnualReturnPercent as number) / 100,
+          parsedYears as number,
+          0,
+          NO_CONTRIBUTION_PERIODS,
+        );
 
       setResult({
         mode,
@@ -420,7 +452,10 @@ export default function GoalSetting({
 
     setResult({
       mode,
-      value: calculatedReturn !== null ? calculatedReturn * 100 : null,
+      value:
+        calculatedReturn !== null
+          ? calculatedReturn * 100
+          : null,
     });
 
     setErrorMessages([]);
@@ -465,7 +500,9 @@ export default function GoalSetting({
           </p>
         </>
       ) : (
-        <p className="font-bold">99年以内では到達しません</p>
+        <p className="font-bold">
+          99年以内では到達しません
+        </p>
       );
     }
 
@@ -480,17 +517,21 @@ export default function GoalSetting({
         </p>
       </>
     ) : (
-      <p className="font-bold">年利30%以内では到達しません</p>
+      <p className="font-bold">
+        年利30%以内では到達しません
+      </p>
     );
   };
 
   return (
     <section className="mt-6 space-y-6">
       <div className="rounded-3xl bg-white p-6 shadow-sm md:p-8">
-        <h2 className="text-xl font-bold">知りたい数値を逆算</h2>
+        <h2 className="text-xl font-bold">
+          知りたい数値を逆算
+        </h2>
 
-        <p className="mt-1 text-sm text-slate-500">
-          3つのモードから、知りたい数値を選んでください
+        <p className="mt-1 whitespace-nowrap text-sm text-slate-500">
+          3つのモードから知りたい数値を選んでください
         </p>
 
         <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -518,7 +559,9 @@ export default function GoalSetting({
       <div className="rounded-3xl bg-white p-6 shadow-sm md:p-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h3 className="text-lg font-bold">計算条件</h3>
+            <h3 className="text-lg font-bold">
+              計算条件
+            </h3>
 
             <p className="mt-1 text-sm text-slate-500">
               黄色の「？」が今回求める数値です
@@ -557,7 +600,9 @@ export default function GoalSetting({
             suffix="円"
             placeholder="入力してください"
             isAnswer={false}
-            onChange={(value) => updateInput("initialAssets", value)}
+            onChange={(value) =>
+              updateInput("initialAssets", value)
+            }
           />
 
           <FixedField
@@ -590,7 +635,9 @@ export default function GoalSetting({
             suffix="年"
             placeholder="入力してください"
             isAnswer={mode === "requiredDuration"}
-            onChange={(value) => updateInput("years", value)}
+            onChange={(value) =>
+              updateInput("years", value)
+            }
           />
 
           <div className="md:col-span-2">
@@ -600,18 +647,24 @@ export default function GoalSetting({
               suffix="円"
               placeholder="入力してください"
               isAnswer={false}
-              onChange={(value) => updateInput("targetAssets", value)}
+              onChange={(value) =>
+                updateInput("targetAssets", value)
+              }
             />
           </div>
         </div>
 
         {errorMessages.length > 0 && (
           <div className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">
-            <p className="font-bold">入力内容を確認してください</p>
+            <p className="font-bold">
+              入力内容を確認してください
+            </p>
 
             <ul className="mt-2 list-disc space-y-1 pl-5">
               {errorMessages.map((message) => (
-                <li key={message}>{message}</li>
+                <li key={message}>
+                  {message}
+                </li>
               ))}
             </ul>
           </div>
@@ -644,8 +697,7 @@ export default function GoalSetting({
 
       <div className="rounded-2xl border border-slate-200 bg-white p-5 text-xs text-slate-500 shadow-sm">
         <p>
-          ※
-          毎月初に積み立て、その後1か月分を運用する前提で計算しています。
+          ※ 毎月初に積み立て、その後1か月分を運用する前提で計算しています。
         </p>
 
         {mode === "requiredReturn" && (
