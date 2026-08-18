@@ -15,7 +15,7 @@ import ContributionSettings, {
   ContributionSetting,
 } from "@/components/ContributionSettings";
 
-import WhatIfCards from "@/components/WhatIfCards";
+import ComparisonTab from "@/components/ComparisonTab";
 
 import GoalSetting from "@/components/GoalSetting";
 
@@ -27,68 +27,137 @@ import WithdrawalSimulator from "@/components/WithdrawalSimulator";
 
 import SavedSimulations from "@/components/SavedSimulations";
 
-// =========================
-// タブ
-// =========================
-
 type TabType =
   | "simulation"
-  | "whatif"
+  | "comparison"
   | "goal"
   | "withdrawal";
 
-// =========================
-// シミュレーション状態
-// =========================
+type TabIconName =
+  | "lightbulb"
+  | "comparison"
+  | "goal"
+  | "withdrawal";
+
+type TabIconProps = {
+  name: TabIconName;
+};
+
+function TabIcon({
+  name,
+}: TabIconProps) {
+  const commonProps = {
+    "aria-hidden": true,
+    className:
+      "h-4 w-4 shrink-0",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap:
+      "round" as const,
+    strokeLinejoin:
+      "round" as const,
+  };
+
+  // Lightbulb
+  if (
+    name ===
+    "lightbulb"
+  ) {
+    return (
+      <svg
+        {...commonProps}
+      >
+        <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
+        <path d="M9 18h6" />
+        <path d="M10 22h4" />
+      </svg>
+    );
+  }
+
+  // ChartNoAxesColumn
+  if (
+    name ===
+    "comparison"
+  ) {
+    return (
+      <svg
+        {...commonProps}
+      >
+        <path d="M5 21v-6" />
+        <path d="M12 21V3" />
+        <path d="M19 21V9" />
+      </svg>
+    );
+  }
+
+  // ChartLine
+  if (
+    name ===
+    "goal"
+  ) {
+    return (
+      <svg
+        {...commonProps}
+      >
+        <path d="M3 3v18h18" />
+        <path d="m7 16 4-4 4 4 5-6" />
+      </svg>
+    );
+  }
+
+  // CircleDollarSign
+  return (
+    <svg
+      {...commonProps}
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="10"
+      />
+      <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+      <path d="M12 18V6" />
+    </svg>
+  );
+}
+
+type SimulationInputState = {
+  initialAssets: boolean;
+  monthlyContribution: boolean;
+  annualReturn: boolean;
+  years: boolean;
+};
 
 type SimulationState = {
   currentAge: number;
-
   initialAssets: number;
-
   monthlyContribution: number;
-
   annualReturn: number;
-
   years: number;
-
   useCustomContributions: boolean;
-
-  contributionSettings:
-    ContributionSetting[];
+  contributionSettings: ContributionSetting[];
 };
-
-// =========================
-// 初期状態
-// =========================
 
 const INITIAL_STATE: SimulationState = {
   currentAge: 40,
+  initialAssets: 3_000_000,
+  monthlyContribution: 100_000,
+  annualReturn: 5,
+  years: 20,
+  useCustomContributions: false,
+  contributionSettings: [],
+};
 
-  initialAssets:
-    3_000_000,
-
-  monthlyContribution:
-    100_000,
-
-  annualReturn:
-    5,
-
-  years:
-    20,
-
-  useCustomContributions:
-    false,
-
-  contributionSettings:
-    [],
+const EMPTY_INPUT_STATE: SimulationInputState = {
+  initialAssets: false,
+  monthlyContribution: false,
+  annualReturn: false,
+  years: false,
 };
 
 export default function Home() {
-  // =========================
-  // 表示タブ
-  // =========================
-
   const [
     activeTab,
     setActiveTab,
@@ -96,18 +165,10 @@ export default function Home() {
     "simulation"
   );
 
-  // =========================
-  // 年次一覧
-  // =========================
-
   const [
     showYearlyTable,
     setShowYearlyTable,
   ] = useState(false);
-
-  // =========================
-  // 基本条件
-  // =========================
 
   const [
     currentAge,
@@ -144,9 +205,18 @@ export default function Home() {
     INITIAL_STATE.years
   );
 
-  // =========================
-  // 積立途中変更
-  // =========================
+  const [
+    simulationInputs,
+    setSimulationInputs,
+  ] = useState<SimulationInputState>(
+    EMPTY_INPUT_STATE
+  );
+
+  const hasAllSimulationInputs =
+    simulationInputs.initialAssets &&
+    simulationInputs.monthlyContribution &&
+    simulationInputs.annualReturn &&
+    simulationInputs.years;
 
   const [
     useCustomContributions,
@@ -169,10 +239,6 @@ export default function Home() {
     setHasContributionError,
   ] = useState(false);
 
-  // =========================
-  // 1つ前の状態
-  // =========================
-
   const [
     previousState,
     setPreviousState,
@@ -180,22 +246,13 @@ export default function Home() {
     SimulationState | null
   >(null);
 
-  // =========================
-  // 現在状態
-  // =========================
-
   const getCurrentState =
     (): SimulationState => ({
       currentAge,
-
       initialAssets,
-
       monthlyContribution,
-
       annualReturn,
-
       years,
-
       useCustomContributions,
 
       contributionSettings:
@@ -206,20 +263,12 @@ export default function Home() {
         ),
     });
 
-  // =========================
-  // 状態保存
-  // =========================
-
   const saveCurrentState =
     () => {
       setPreviousState(
         getCurrentState()
       );
     };
-
-  // =========================
-  // 状態復元
-  // =========================
 
   const restoreState = (
     state: SimulationState
@@ -256,12 +305,17 @@ export default function Home() {
       )
     );
 
-    setHasContributionError(false);
-  };
+    setHasContributionError(
+      false
+    );
 
-  // =========================
-  // お気に入り条件を使用
-  // =========================
+    setSimulationInputs({
+      initialAssets: true,
+      monthlyContribution: true,
+      annualReturn: true,
+      years: true,
+    });
+  };
 
   const loadSavedSimulation = (
     state: SimulationState
@@ -270,7 +324,9 @@ export default function Home() {
 
     restoreState(state);
 
-    setShowYearlyTable(false);
+    setShowYearlyTable(
+      false
+    );
 
     setActiveTab(
       "simulation"
@@ -282,15 +338,9 @@ export default function Home() {
     });
   };
 
-  // =========================
-  // 1つ前に戻す
-  // =========================
-
   const undoLastChange =
     () => {
-      if (
-        !previousState
-      ) {
+      if (!previousState) {
         return;
       }
 
@@ -311,16 +361,16 @@ export default function Home() {
       });
     };
 
-  // =========================
-  // 初期状態
-  // =========================
-
   const resetToInitial =
     () => {
       saveCurrentState();
 
       restoreState(
         INITIAL_STATE
+      );
+
+      setSimulationInputs(
+        EMPTY_INPUT_STATE
       );
 
       setShowYearlyTable(
@@ -336,10 +386,6 @@ export default function Home() {
         behavior: "smooth",
       });
     };
-
-  // =========================
-  // 積立設定 → 月単位
-  // =========================
 
   const contributionPeriods =
     useMemo(() => {
@@ -376,29 +422,19 @@ export default function Home() {
       years,
     ]);
 
-  // =========================
-  // 計算可否
-  // =========================
-
   const canCalculate =
-    !useCustomContributions ||
-    !hasContributionError;
-
-  // =========================
-  // メイン計算
-  // =========================
+    hasAllSimulationInputs &&
+    (!useCustomContributions ||
+      !hasContributionError);
 
   const result =
     useMemo(() => {
-      if (
-        !canCalculate
-      ) {
+      if (!canCalculate) {
         return null;
       }
 
       return calculateFutureAssets({
         initialAssets,
-
         monthlyContribution,
 
         annualReturn:
@@ -406,7 +442,6 @@ export default function Home() {
           100,
 
         years,
-
         contributionPeriods,
       });
     }, [
@@ -418,10 +453,6 @@ export default function Home() {
       canCalculate,
     ]);
 
-  // =========================
-  // 金額表示
-  // =========================
-
   const formatYen = (
     value: number
   ) =>
@@ -431,341 +462,44 @@ export default function Home() {
       "ja-JP"
     )}円`;
 
-  // =========================
-  // 最後の積立設定
-  // =========================
-
-  const getLastContributionSetting =
-    (
-      settings:
-        ContributionSetting[]
-    ) => {
-      if (
-        settings.length ===
-        0
-      ) {
-        return null;
-      }
-
-      return settings.reduce(
-        (
-          latest,
-          current
-        ) =>
-          (
-            current.endYear ??
-            years
-          ) >
-          (
-            latest.endYear ??
-            years
-          )
-            ? current
-            : latest
-      );
-    };
-
-  // =========================
-  // もしも？ 月＋1万円
-  // =========================
-
-  const applyMonthlyPlus =
-    () => {
-      saveCurrentState();
-
-      setMonthlyContribution(
-        (current) =>
-          current +
-          10_000
-      );
-
-      if (
-        useCustomContributions
-      ) {
-        setContributionSettings(
-          (current) =>
-            current.map(
-              (setting) => ({
-                ...setting,
-
-                monthlyAmount:
-                  setting.monthlyAmount +
-                  10_000,
-              })
-            )
-        );
-      }
-
-      setActiveTab(
-        "simulation"
-      );
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    };
-
-  // =========================
-  // もしも？ 年利＋1％
-  // =========================
-
-  const applyReturnPlus =
-    () => {
-      saveCurrentState();
-
-      setAnnualReturn(
-        (current) =>
-          Math.min(
-            30,
-            current + 1
-          )
-      );
-
-      setActiveTab(
-        "simulation"
-      );
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    };
-
-  // =========================
-  // もしも？ ＋最大5年
-  // =========================
-
-  const applyFiveYears =
-    () => {
-      const oldYears =
-        years;
-
-      const extensionYears =
-        Math.min(
-          5,
-          99 - oldYears
-        );
-
-      if (
-        extensionYears <= 0
-      ) {
-        return;
-      }
-
-      saveCurrentState();
-
-      const newYears =
-        oldYears +
-        extensionYears;
-
-      if (
-        useCustomContributions &&
-        contributionSettings.length >
-          0
-      ) {
-        setContributionSettings(
-          (current) => {
-            const lastSetting =
-              getLastContributionSetting(
-                current
-              );
-
-            if (
-              !lastSetting
-            ) {
-              return current;
-            }
-
-            if (
-              lastSetting.endYear ===
-              null
-            ) {
-              return current;
-            }
-
-            return [
-              ...current,
-
-              {
-                startYear:
-                  oldYears +
-                  1,
-
-                endYear:
-                  newYears,
-
-                monthlyAmount:
-                  lastSetting.monthlyAmount,
-              },
-            ];
-          }
-        );
-      }
-
-      setYears(
-        newYears
-      );
-
-      setActiveTab(
-        "simulation"
-      );
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    };
-
-  // =========================
-  // もしも？
-  // 月＋1万円＆＋最大5年
-  // =========================
-
-  const applyBoth =
-    () => {
-      const oldYears =
-        years;
-
-      const extensionYears =
-        Math.min(
-          5,
-          99 - oldYears
-        );
-
-      saveCurrentState();
-
-      const newYears =
-        oldYears +
-        extensionYears;
-
-      setMonthlyContribution(
-        (current) =>
-          current +
-          10_000
-      );
-
-      if (
-        useCustomContributions
-      ) {
-        setContributionSettings(
-          (current) => {
-            const increasedSettings =
-              current.map(
-                (setting) => ({
-                  ...setting,
-
-                  monthlyAmount:
-                    setting.monthlyAmount +
-                    10_000,
-                })
-              );
-
-            if (
-              increasedSettings.length ===
-                0 ||
-              extensionYears <=
-                0
-            ) {
-              return increasedSettings;
-            }
-
-            const lastSetting =
-              getLastContributionSetting(
-                increasedSettings
-              );
-
-            if (
-              !lastSetting
-            ) {
-              return increasedSettings;
-            }
-
-            if (
-              lastSetting.endYear ===
-              null
-            ) {
-              return increasedSettings;
-            }
-
-            return [
-              ...increasedSettings,
-
-              {
-                startYear:
-                  oldYears +
-                  1,
-
-                endYear:
-                  newYears,
-
-                monthlyAmount:
-                  lastSetting.monthlyAmount,
-              },
-            ];
-          }
-        );
-      }
-
-      if (
-        extensionYears > 0
-      ) {
-        setYears(
-          newYears
-        );
-      }
-
-      setActiveTab(
-        "simulation"
-      );
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    };
-
-  // =========================
-  // タブ
-  // =========================
-
   const tabs: {
     id: TabType;
     label: string;
+    icon: TabIconName;
   }[] = [
     {
       id: "simulation",
       label:
         "シミュレーション",
+      icon:
+        "lightbulb",
     },
-
     {
-      id: "whatif",
+      id: "comparison",
       label:
-        "もしも？",
+        "くらべる",
+      icon:
+        "comparison",
     },
-
     {
       id: "goal",
       label:
         "どれくらい？",
+      icon:
+        "goal",
     },
-
     {
       id: "withdrawal",
       label:
         "取り崩し",
+      icon:
+        "withdrawal",
     },
   ];
 
   return (
     <main className="min-h-screen bg-slate-50 p-4 text-slate-900 md:p-10">
       <div className="mx-auto max-w-5xl">
-
-        {/* =========================
-            ヘッダー
-        ========================= */}
-
         <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
           <div>
             <h1 className="text-3xl font-bold md:text-4xl">
@@ -780,15 +514,12 @@ export default function Home() {
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-
               onClick={
                 undoLastChange
               }
-
               disabled={
                 !previousState
               }
-
               className={`
                 rounded-xl
                 border
@@ -809,23 +540,15 @@ export default function Home() {
 
             <button
               type="button"
-
               onClick={
                 resetToInitial
               }
-
               className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-100"
             >
               ↻ 初期状態に戻す
             </button>
           </div>
         </div>
-
-        {/* =========================
-            タブ
-            スマホ 2×2
-            PC 1×4
-        ========================= */}
 
         <div className="mt-8 rounded-2xl bg-slate-200/70 p-1.5">
           <div className="grid grid-cols-2 gap-1 md:grid-cols-4">
@@ -835,15 +558,12 @@ export default function Home() {
                   key={
                     tab.id
                   }
-
                   type="button"
-
                   onClick={() =>
                     setActiveTab(
                       tab.id
                     )
                   }
-
                   className={`
                     min-w-0
                     rounded-xl
@@ -862,30 +582,34 @@ export default function Home() {
                     }
                   `}
                 >
-                  {tab.label}
+                  <span className="flex items-center justify-center gap-1.5">
+                    <TabIcon
+                      name={
+                        tab.icon
+                      }
+                    />
+
+                    <span>
+                      {
+                        tab.label
+                      }
+                    </span>
+                  </span>
                 </button>
               )
             )}
           </div>
         </div>
 
-        {/* ======================================
-            ① シミュレーション
-        ====================================== */}
-
         {activeTab ===
           "simulation" && (
           <div>
-
-            {/* 条件 */}
-
             <section className="mt-6 rounded-3xl bg-white p-6 shadow-sm md:p-8">
               <h2 className="text-xl font-bold">
                 シミュレーション条件
               </h2>
 
               <div className="mt-6 grid gap-6 md:grid-cols-2">
-
                 <label>
                   <span className="mb-2 block text-sm font-medium text-slate-600">
                     現在の運用資産
@@ -893,15 +617,35 @@ export default function Home() {
 
                   <NumericInput
                     value={
-                      initialAssets
+                      simulationInputs.initialAssets
+                        ? initialAssets
+                        : null
                     }
+                    onValueChange={(value) => {
+                      setInitialAssets(
+                        value
+                      );
 
-                    onValueChange={
-                      setInitialAssets
+                      setSimulationInputs(
+                        (current) => ({
+                          ...current,
+                          initialAssets:
+                            true,
+                        })
+                      );
+                    }}
+                    allowEmpty
+                    onEmpty={() =>
+                      setSimulationInputs(
+                        (current) => ({
+                          ...current,
+                          initialAssets:
+                            false,
+                        })
+                      )
                     }
-
+                    placeholder="例：3,000,000"
                     min={0}
-
                     suffix="円"
                   />
                 </label>
@@ -913,15 +657,35 @@ export default function Home() {
 
                   <NumericInput
                     value={
-                      monthlyContribution
+                      simulationInputs.monthlyContribution
+                        ? monthlyContribution
+                        : null
                     }
+                    onValueChange={(value) => {
+                      setMonthlyContribution(
+                        value
+                      );
 
-                    onValueChange={
-                      setMonthlyContribution
+                      setSimulationInputs(
+                        (current) => ({
+                          ...current,
+                          monthlyContribution:
+                            true,
+                        })
+                      );
+                    }}
+                    allowEmpty
+                    onEmpty={() =>
+                      setSimulationInputs(
+                        (current) => ({
+                          ...current,
+                          monthlyContribution:
+                            false,
+                        })
+                      )
                     }
-
+                    placeholder="例：100,000"
                     min={0}
-
                     suffix="円"
                   />
                 </label>
@@ -933,21 +697,38 @@ export default function Home() {
 
                   <NumericInput
                     value={
-                      annualReturn
+                      simulationInputs.annualReturn
+                        ? annualReturn
+                        : null
                     }
+                    onValueChange={(value) => {
+                      setAnnualReturn(
+                        value
+                      );
 
-                    onValueChange={
-                      setAnnualReturn
+                      setSimulationInputs(
+                        (current) => ({
+                          ...current,
+                          annualReturn:
+                            true,
+                        })
+                      );
+                    }}
+                    allowEmpty
+                    onEmpty={() =>
+                      setSimulationInputs(
+                        (current) => ({
+                          ...current,
+                          annualReturn:
+                            false,
+                        })
+                      )
                     }
-
+                    placeholder="例：5"
                     min={-20}
-
                     max={30}
-
                     allowDecimal
-
                     allowNegative
-
                     suffix="%"
                   />
                 </label>
@@ -959,76 +740,94 @@ export default function Home() {
 
                   <NumericInput
                     value={
-                      years
+                      simulationInputs.years
+                        ? years
+                        : null
                     }
+                    onValueChange={(value) => {
+                      setYears(
+                        value
+                      );
 
-                    onValueChange={
-                      setYears
+                      setSimulationInputs(
+                        (current) => ({
+                          ...current,
+                          years:
+                            true,
+                        })
+                      );
+                    }}
+                    allowEmpty
+                    onEmpty={() =>
+                      setSimulationInputs(
+                        (current) => ({
+                          ...current,
+                          years:
+                            false,
+                        })
+                      )
                     }
-
+                    placeholder="例：20"
                     min={1}
-
                     max={99}
-
                     suffix="年"
                   />
                 </label>
               </div>
 
-              {/* 積立途中変更 */}
-
               <div className="mt-8 border-t border-slate-100 pt-6">
                 <label className="flex cursor-pointer items-start gap-3 sm:items-center">
                   <input
                     type="checkbox"
-
+                    disabled={
+                      !hasAllSimulationInputs
+                    }
                     checked={
                       useCustomContributions
                     }
-
-                    onChange={(e) => {
+                    onChange={(event) => {
                       const checked =
-                        e.target.checked;
+                        event.target.checked;
 
                       setUseCustomContributions(
                         checked
                       );
 
-                      if (
-                        !checked
-                      ) {
+                      if (!checked) {
                         setHasContributionError(
                           false
                         );
                       }
                     }}
-
-                    className="mt-0.5 h-5 w-5 shrink-0 sm:mt-0"
+                    className="mt-0.5 h-5 w-5 shrink-0 disabled:cursor-not-allowed disabled:opacity-40 sm:mt-0"
                   />
 
-                  <span className="font-bold">
+                  <span
+                    className={`font-bold ${
+                      hasAllSimulationInputs
+                        ? "text-slate-900"
+                        : "text-slate-400"
+                    }`}
+                  >
                     積立額を途中で変更する
                   </span>
                 </label>
 
-                {useCustomContributions && (
+                {useCustomContributions &&
+                  hasAllSimulationInputs && (
                   <ContributionSettings
                     years={
                       years
                     }
-
                     monthlyContribution={
                       monthlyContribution
                     }
-
                     settings={
                       contributionSettings
                     }
-
                     onChange={
                       setContributionSettings
                     }
-
                     onValidationChange={
                       setHasContributionError
                     }
@@ -1037,20 +836,19 @@ export default function Home() {
               </div>
             </section>
 
-            <SavedSimulations
-              currentState={
-                getCurrentState()
-              }
-
-              onLoad={
-                loadSavedSimulation
-              }
-            />
+            {result && (
+              <SavedSimulations
+                currentState={
+                  getCurrentState()
+                }
+                onLoad={
+                  loadSavedSimulation
+                }
+              />
+            )}
 
             {result ? (
               <>
-                {/* 結果 */}
-
                 <section className="mt-6 rounded-3xl bg-slate-900 p-6 text-white shadow-sm md:p-8">
                   <p className="text-sm text-slate-400">
                     {years}
@@ -1090,8 +888,6 @@ export default function Home() {
                   </div>
                 </section>
 
-                {/* 資産推移 */}
-
                 <section className="mt-6 rounded-3xl bg-white p-5 shadow-sm sm:p-6 md:p-8">
                   <div>
                     <h2 className="text-xl font-bold">
@@ -1112,21 +908,15 @@ export default function Home() {
                   </div>
                 </section>
 
-                {/* =========================
-                    年ごとの一覧
-                ========================= */}
-
                 <section className="mt-6 overflow-hidden rounded-3xl bg-white shadow-sm">
                   <button
                     type="button"
-
                     onClick={() =>
                       setShowYearlyTable(
                         (current) =>
                           !current
                       )
                     }
-
                     className="flex w-full items-center justify-between gap-4 p-6 text-left md:p-8"
                   >
                     <div>
@@ -1140,7 +930,9 @@ export default function Home() {
                     </div>
 
                     <span className="shrink-0 text-2xl font-medium text-slate-400">
-                      {showYearlyTable ? "−" : "+"}
+                      {showYearlyTable
+                        ? "−"
+                        : "+"}
                     </span>
                   </button>
 
@@ -1150,13 +942,22 @@ export default function Home() {
                         data={
                           result.yearlyResults
                         }
-
                         embedded
                       />
                     </div>
                   )}
                 </section>
               </>
+            ) : !hasAllSimulationInputs ? (
+              <section className="mt-6 rounded-3xl border border-blue-100 bg-white p-6 text-center shadow-sm md:p-8">
+                <p className="font-bold text-slate-700">
+                  条件を入力するとシミュレーション結果が表示されます
+                </p>
+
+                <p className="mt-2 text-sm text-slate-500">
+                  4つの条件をすべて入力してください。
+                </p>
+              </section>
             ) : (
               <section className="mt-6 rounded-3xl border border-amber-200 bg-amber-50 p-6">
                 <p className="font-bold text-amber-800">
@@ -1164,129 +965,54 @@ export default function Home() {
                 </p>
 
                 <p className="mt-2 text-sm text-amber-700">
-                  積立期間の入力内容を修正すると、
-                  自動的に計算を再開します。
+                  積立期間の入力内容を修正すると、自動的に計算を再開します。
                 </p>
               </section>
             )}
           </div>
         )}
-
-        {/* ======================================
-            ② もしも？
-        ====================================== */}
 
         {activeTab ===
-          "whatif" && (
-          <div>
-            {result ? (
-              <WhatIfCards
-                initialAssets={
-                  initialAssets
-                }
+          "comparison" && (
+          <ComparisonTab
+            onGoToSimulation={() => {
+              setActiveTab(
+                "simulation"
+              );
 
-                monthlyContribution={
-                  monthlyContribution
-                }
-
-                annualReturn={
-                  annualReturn /
-                  100
-                }
-
-                years={
-                  years
-                }
-
-                contributionPeriods={
-                  contributionPeriods
-                }
-
-                baseFinalAssets={
-                  result.finalAssets
-                }
-
-                onApplyMonthlyPlus={
-                  applyMonthlyPlus
-                }
-
-                onApplyReturnPlus={
-                  applyReturnPlus
-                }
-
-                onApplyFiveYears={
-                  applyFiveYears
-                }
-
-                onApplyBoth={
-                  applyBoth
-                }
-              />
-            ) : (
-              <section className="mt-6 rounded-3xl border border-amber-200 bg-amber-50 p-6">
-                <p className="font-bold text-amber-800">
-                  まず入力内容を修正してください
-                </p>
-
-                <p className="mt-2 text-sm text-amber-700">
-                  シミュレーション条件にエラーがあります。
-                </p>
-              </section>
-            )}
-          </div>
+              window.scrollTo({
+                top: 0,
+                behavior: "smooth",
+              });
+            }}
+          />
         )}
-
-        {/* ======================================
-            ③ どれくらい？
-        ====================================== */}
 
         {activeTab ===
           "goal" && (
-          <div>
-            {result ? (
-              <GoalSetting
-                initialAssets={
-                  initialAssets
-                }
-
-                monthlyContribution={
-                  monthlyContribution
-                }
-
-                annualReturn={
-                  annualReturn /
-                  100
-                }
-
-                years={
-                  years
-                }
-
-                contributionPeriods={
-                  contributionPeriods
-                }
-
-                finalAssets={
-                  result.finalAssets
-                }
-              />
-            ) : (
-              <section className="mt-6 rounded-3xl border border-amber-200 bg-amber-50 p-6">
-                <p className="font-bold text-amber-800">
-                  まず入力内容を修正してください
-                </p>
-
-                <p className="mt-2 text-sm text-amber-700">
-                  シミュレーション条件にエラーがあります。
-                </p>
-              </section>
-            )}
-          </div>
+          <GoalSetting
+            initialAssets={
+              initialAssets
+            }
+            monthlyContribution={
+              monthlyContribution
+            }
+            annualReturn={
+              annualReturn /
+              100
+            }
+            years={
+              years
+            }
+            contributionPeriods={
+              contributionPeriods
+            }
+            finalAssets={
+              result?.finalAssets ??
+              0
+            }
+          />
         )}
-
-        {/* ======================================
-            ④ 取り崩し
-        ====================================== */}
 
         {activeTab ===
           "withdrawal" && (
@@ -1312,15 +1038,11 @@ export default function Home() {
                         value={
                           currentAge
                         }
-
                         onValueChange={
                           setCurrentAge
                         }
-
                         min={0}
-
                         max={120}
-
                         suffix="歳"
                       />
                     </label>
@@ -1331,25 +1053,20 @@ export default function Home() {
                   currentAge={
                     currentAge
                   }
-
                   defaultStartAge={
                     currentAge +
                     years
                   }
-
                   initialAssets={
                     initialAssets
                   }
-
                   monthlyContribution={
                     monthlyContribution
                   }
-
                   accumulationReturn={
                     annualReturn /
                     100
                   }
-
                   contributionPeriods={
                     contributionPeriods
                   }
@@ -1358,24 +1075,19 @@ export default function Home() {
             ) : (
               <section className="mt-6 rounded-3xl border border-amber-200 bg-amber-50 p-6">
                 <p className="font-bold text-amber-800">
-                  まず入力内容を修正してください
+                  まずシミュレーション条件を入力してください
                 </p>
 
                 <p className="mt-2 text-sm text-amber-700">
-                  シミュレーション条件にエラーがあります。
+                  取り崩し計算には、4つのシミュレーション条件が必要です。
                 </p>
               </section>
             )}
           </div>
         )}
 
-        {/* =========================
-            注意
-        ========================= */}
-
         <p className="mt-6 text-center text-xs text-slate-400">
-          ※ 想定利回りに基づくシミュレーションであり、
-          将来の運用成果を保証するものではありません。
+          ※ 想定利回りに基づくシミュレーションであり、将来の運用成果を保証するものではありません。
         </p>
       </div>
     </main>
