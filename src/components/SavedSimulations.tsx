@@ -11,34 +11,23 @@ import type {
 
 export type SavedSimulationState = {
   currentAge: number;
-
   initialAssets: number;
-
   monthlyContribution: number;
-
   annualReturn: number;
-
   years: number;
-
   useCustomContributions: boolean;
-
-  contributionSettings:
-    ContributionSetting[];
+  contributionSettings: ContributionSetting[];
 };
 
 type SavedSimulation = {
   id: string;
-
   name: string;
-
   savedAt: string;
-
   state: SavedSimulationState;
 };
 
 type SavedSimulationsProps = {
-  currentState:
-    SavedSimulationState;
+  currentState: SavedSimulationState;
 
   onLoad: (
     state: SavedSimulationState
@@ -79,8 +68,7 @@ const isValidState = (
   value: unknown
 ): value is SavedSimulationState => {
   if (
-    typeof value !==
-      "object" ||
+    typeof value !== "object" ||
     value === null
   ) {
     return false;
@@ -112,8 +100,7 @@ const isValidSavedSimulation = (
   value: unknown
 ): value is SavedSimulation => {
   if (
-    typeof value !==
-      "object" ||
+    typeof value !== "object" ||
     value === null
   ) {
     return false;
@@ -123,10 +110,8 @@ const isValidSavedSimulation = (
     value as Partial<SavedSimulation>;
 
   return (
-    typeof saved.id ===
-      "string" &&
-    typeof saved.name ===
-      "string" &&
+    typeof saved.id === "string" &&
+    typeof saved.name === "string" &&
     typeof saved.savedAt ===
       "string" &&
     isValidState(saved.state)
@@ -140,9 +125,9 @@ export default function SavedSimulations({
   const [
     savedSimulations,
     setSavedSimulations,
-  ] = useState<
-    SavedSimulation[]
-  >([]);
+  ] = useState<SavedSimulation[]>(
+    []
+  );
 
   const [
     showNameInput,
@@ -159,6 +144,11 @@ export default function SavedSimulations({
     setStorageError,
   ] = useState("");
 
+  const [
+    showSavedList,
+    setShowSavedList,
+  ] = useState(false);
+
   useEffect(() => {
     try {
       const stored =
@@ -173,9 +163,7 @@ export default function SavedSimulations({
       const parsed: unknown =
         JSON.parse(stored);
 
-      if (
-        !Array.isArray(parsed)
-      ) {
+      if (!Array.isArray(parsed)) {
         return;
       }
 
@@ -192,8 +180,7 @@ export default function SavedSimulations({
   }, []);
 
   const saveToLocalStorage = (
-    simulations:
-      SavedSimulation[]
+    simulations: SavedSimulation[]
   ) => {
     try {
       window.localStorage.setItem(
@@ -215,42 +202,38 @@ export default function SavedSimulations({
     }
   };
 
-  const saveSimulation =
-    () => {
-      const trimmedName =
-        simulationName.trim();
+  const saveSimulation = () => {
+    const trimmedName =
+      simulationName.trim();
 
-      if (!trimmedName) {
-        return;
-      }
+    if (!trimmedName) {
+      return;
+    }
 
-      const newSimulation:
-        SavedSimulation = {
-          id: createId(),
+    const newSimulation:
+      SavedSimulation = {
+        id: createId(),
+        name: trimmedName,
 
-          name: trimmedName,
+        savedAt:
+          new Date().toISOString(),
 
-          savedAt:
-            new Date().toISOString(),
+        state: copyState(
+          currentState
+        ),
+      };
 
-          state: copyState(
-            currentState
-          ),
-        };
+    saveToLocalStorage([
+      newSimulation,
+      ...savedSimulations,
+    ]);
 
-      saveToLocalStorage([
-        newSimulation,
-        ...savedSimulations,
-      ]);
-
-      setSimulationName("");
-
-      setShowNameInput(false);
-    };
+    setSimulationName("");
+    setShowNameInput(false);
+  };
 
   const loadSimulation = (
-    simulation:
-      SavedSimulation
+    simulation: SavedSimulation
   ) => {
     onLoad(
       copyState(
@@ -260,8 +243,7 @@ export default function SavedSimulations({
   };
 
   const deleteSimulation = (
-    simulation:
-      SavedSimulation
+    simulation: SavedSimulation
   ) => {
     const shouldDelete =
       window.confirm(
@@ -281,12 +263,10 @@ export default function SavedSimulations({
     );
   };
 
-  const cancelSaving =
-    () => {
-      setSimulationName("");
-
-      setShowNameInput(false);
-    };
+  const cancelSaving = () => {
+    setSimulationName("");
+    setShowNameInput(false);
+  };
 
   const formatYen = (
     value: number
@@ -300,8 +280,7 @@ export default function SavedSimulations({
   const formatSavedDate = (
     value: string
   ) => {
-    const date =
-      new Date(value);
+    const date = new Date(value);
 
     if (
       Number.isNaN(
@@ -336,13 +315,11 @@ export default function SavedSimulations({
       {!showNameInput ? (
         <button
           type="button"
-
           onClick={() =>
             setShowNameInput(
               true
             )
           }
-
           className="mt-6 w-full rounded-2xl border-2 border-dashed border-blue-200 bg-blue-50 px-4 py-4 font-bold text-blue-600 transition hover:border-blue-300 hover:bg-blue-100"
         >
           ☆ この条件を保存
@@ -356,18 +333,23 @@ export default function SavedSimulations({
 
             <input
               type="text"
-
               value={
                 simulationName
               }
-
               onChange={(event) =>
                 setSimulationName(
                   event.target.value
                 )
               }
-
               onKeyDown={(event) => {
+                if (
+                  event.nativeEvent
+                    .isComposing ||
+                  event.keyCode === 229
+                ) {
+                  return;
+                }
+
                 if (
                   event.key ===
                   "Enter"
@@ -375,13 +357,9 @@ export default function SavedSimulations({
                   saveSimulation();
                 }
               }}
-
               maxLength={40}
-
               autoFocus
-
               placeholder="例：老後基本プラン"
-
               className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-base outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             />
           </label>
@@ -389,15 +367,12 @@ export default function SavedSimulations({
           <div className="mt-3 flex flex-col gap-2 sm:flex-row">
             <button
               type="button"
-
               onClick={
                 saveSimulation
               }
-
               disabled={
                 !simulationName.trim()
               }
-
               className={`rounded-xl px-5 py-3 font-bold transition ${
                 simulationName.trim()
                   ? "bg-blue-600 text-white hover:bg-blue-700"
@@ -409,11 +384,9 @@ export default function SavedSimulations({
 
             <button
               type="button"
-
               onClick={
                 cancelSaving
               }
-
               className="rounded-xl border border-slate-300 bg-white px-5 py-3 font-bold text-slate-600 transition hover:bg-slate-100"
             >
               キャンセル
@@ -430,133 +403,160 @@ export default function SavedSimulations({
 
       {savedSimulations.length >
       0 ? (
-        <div className="mt-6 space-y-4">
-          {savedSimulations.map(
-            (simulation) => (
-              <div
-                key={
-                  simulation.id
-                }
+        <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200">
+          <button
+            type="button"
+            onClick={() =>
+              setShowSavedList(
+                (current) =>
+                  !current
+              )
+            }
+            className="flex w-full items-center justify-between gap-4 bg-white p-4 text-left transition hover:bg-slate-50 sm:p-5"
+          >
+            <div>
+              <p className="font-bold text-slate-700">
+                保存済み条件
+              </p>
 
-                className="rounded-2xl border border-slate-200 p-4 sm:p-5"
-              >
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <h3 className="break-words text-lg font-bold">
-                      ☆{" "}
-                      {
-                        simulation.name
-                      }
-                    </h3>
+              <p className="mt-1 text-xs text-slate-400">
+                {savedSimulations.length}
+                件保存されています
+              </p>
+            </div>
 
-                    <p className="mt-1 text-xs text-slate-400">
-                      保存日：
-                      {formatSavedDate(
-                        simulation.savedAt
-                      )}
-                    </p>
-                  </div>
+            <span className="shrink-0 text-2xl font-medium text-slate-400">
+              {showSavedList
+                ? "−"
+                : "+"}
+            </span>
+          </button>
 
-                  {simulation.state
-                    .useCustomContributions && (
-                    <span className="w-fit rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-600">
-                      積立途中変更あり
-                    </span>
-                  )}
-                </div>
-
-                <div className="mt-4 grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
-                  <div>
-                    <p className="text-slate-400">
-                      現在の運用資産
-                    </p>
-
-                    <p className="mt-1 break-words font-bold">
-                      {formatYen(
-                        simulation
-                          .state
-                          .initialAssets
-                      )}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-slate-400">
-                      基本積立
-                    </p>
-
-                    <p className="mt-1 break-words font-bold">
-                      {formatYen(
-                        simulation
-                          .state
-                          .monthlyContribution
-                      )}
-                      /月
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-slate-400">
-                      想定年利
-                    </p>
-
-                    <p className="mt-1 font-bold">
-                      {
-                        simulation
-                          .state
-                          .annualReturn
-                      }
-                      %
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-slate-400">
-                      運用期間
-                    </p>
-
-                    <p className="mt-1 font-bold">
-                      {
-                        simulation
-                          .state
-                          .years
-                      }
-                      年
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-                  <button
-                    type="button"
-
-                    onClick={() =>
-                      loadSimulation(
-                        simulation
-                      )
+          {showSavedList && (
+            <div className="space-y-4 border-t border-slate-100 p-4 sm:p-5">
+              {savedSimulations.map(
+                (simulation) => (
+                  <div
+                    key={
+                      simulation.id
                     }
-
-                    className="rounded-xl bg-blue-600 px-5 py-3 font-bold text-white transition hover:bg-blue-700"
+                    className="rounded-2xl border border-slate-200 p-4 sm:p-5"
                   >
-                    この条件を使う
-                  </button>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <h3 className="break-words text-lg font-bold">
+                          ☆{" "}
+                          {
+                            simulation.name
+                          }
+                        </h3>
 
-                  <button
-                    type="button"
+                        <p className="mt-1 text-xs text-slate-400">
+                          保存日：
+                          {formatSavedDate(
+                            simulation.savedAt
+                          )}
+                        </p>
+                      </div>
 
-                    onClick={() =>
-                      deleteSimulation(
-                        simulation
-                      )
-                    }
+                      {simulation.state
+                        .useCustomContributions && (
+                        <span className="w-fit rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-600">
+                          積立途中変更あり
+                        </span>
+                      )}
+                    </div>
 
-                    className="rounded-xl border border-red-200 bg-white px-5 py-3 font-bold text-red-600 transition hover:bg-red-50"
-                  >
-                    削除
-                  </button>
-                </div>
-              </div>
-            )
+                    <div className="mt-4 grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
+                      <div>
+                        <p className="text-slate-400">
+                          現在の運用資産
+                        </p>
+
+                        <p className="mt-1 break-words font-bold">
+                          {formatYen(
+                            simulation
+                              .state
+                              .initialAssets
+                          )}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-slate-400">
+                          基本積立
+                        </p>
+
+                        <p className="mt-1 break-words font-bold">
+                          {formatYen(
+                            simulation
+                              .state
+                              .monthlyContribution
+                          )}
+                          /月
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-slate-400">
+                          想定年利
+                        </p>
+
+                        <p className="mt-1 font-bold">
+                          {
+                            simulation
+                              .state
+                              .annualReturn
+                          }
+                          %
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-slate-400">
+                          運用期間
+                        </p>
+
+                        <p className="mt-1 font-bold">
+                          {
+                            simulation
+                              .state
+                              .years
+                          }
+                          年
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          loadSimulation(
+                            simulation
+                          )
+                        }
+                        className="rounded-xl bg-blue-600 px-5 py-3 font-bold text-white transition hover:bg-blue-700"
+                      >
+                        この条件を使う
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          deleteSimulation(
+                            simulation
+                          )
+                        }
+                        className="rounded-xl border border-red-200 bg-white px-5 py-3 font-bold text-red-600 transition hover:bg-red-50"
+                      >
+                        削除
+                      </button>
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
           )}
         </div>
       ) : (

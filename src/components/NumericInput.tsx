@@ -21,26 +21,19 @@ type NumericInputProps = {
   allowDecimal?: boolean;
   allowNegative?: boolean;
 
-  // 空欄を許可するか
   allowEmpty?: boolean;
-
-  // 空欄で確定した時
   onEmpty?: () => void;
 
+  placeholder?: string;
   suffix?: string;
 
   className?: string;
 };
 
-// =========================
-// 全角 → 半角
-// =========================
-
 function convertFullWidthToHalfWidth(
   value: string
 ) {
   return value
-    // 全角数字
     .replace(
       /[０-９]/g,
       (char) =>
@@ -49,35 +42,14 @@ function convertFullWidthToHalfWidth(
             0xfee0
         )
     )
-
-    // 全角ピリオド
-    .replace(
-      /．/g,
-      "."
-    )
-
-    // 全角カンマ
-    .replace(
-      /，/g,
-      ","
-    )
-
-    // 全角・類似マイナス
+    .replace(/．/g, ".")
+    .replace(/，/g, ",")
     .replace(
       /[－ー−]/g,
       "-"
     )
-
-    // 全角スペース
-    .replace(
-      /　/g,
-      " "
-    );
+    .replace(/　/g, " ");
 }
-
-// =========================
-// 入力文字を整理
-// =========================
 
 function sanitizeInput(
   value: string,
@@ -89,23 +61,17 @@ function sanitizeInput(
       value
     );
 
-  // カンマ・空白を除去
   normalized =
     normalized.replace(
       /[, ]/g,
       ""
     );
 
-  // 数字・小数点・マイナス以外を除去
   normalized =
     normalized.replace(
       /[^0-9.\-]/g,
       ""
     );
-
-  // =========================
-  // マイナス処理
-  // =========================
 
   if (!allowNegative) {
     normalized =
@@ -131,10 +97,6 @@ function sanitizeInput(
     }
   }
 
-  // =========================
-  // 小数点処理
-  // =========================
-
   if (!allowDecimal) {
     normalized =
       normalized.replace(
@@ -147,9 +109,7 @@ function sanitizeInput(
         "."
       );
 
-    if (
-      firstDot !== -1
-    ) {
+    if (firstDot !== -1) {
       normalized =
         normalized.slice(
           0,
@@ -169,19 +129,13 @@ function sanitizeInput(
   return normalized;
 }
 
-// =========================
-// カンマ表示
-// =========================
-
 function formatNumber(
   value: number | null,
   allowDecimal: boolean
 ) {
   if (
     value === null ||
-    !Number.isFinite(
-      value
-    )
+    !Number.isFinite(value)
   ) {
     return "";
   }
@@ -210,6 +164,7 @@ export default function NumericInput({
   allowEmpty = false,
   onEmpty,
 
+  placeholder,
   suffix,
 
   className = "",
@@ -234,10 +189,6 @@ export default function NumericInput({
       null
     );
 
-  // =========================
-  // 外部から値が変わった場合
-  // =========================
-
   useEffect(() => {
     if (!isEditing) {
       setDisplayValue(
@@ -253,33 +204,21 @@ export default function NumericInput({
     isEditing,
   ]);
 
-  // =========================
-  // フォーカス
-  // =========================
-
   const handleFocus = () => {
     setIsEditing(true);
 
-    // 編集中はカンマを外す
     setDisplayValue(
       value === null
         ? ""
         : String(value)
     );
 
-    // 全選択
     requestAnimationFrame(
       () => {
         inputRef.current?.select();
       }
     );
   };
-
-  // =========================
-  // 入力中
-  //
-  // ここでは親へ値を渡さない
-  // =========================
 
   const handleChange = (
     event: ChangeEvent<HTMLInputElement>
@@ -296,10 +235,6 @@ export default function NumericInput({
     );
   };
 
-  // =========================
-  // 値を確定
-  // =========================
-
   const commitValue = () => {
     let normalized =
       sanitizeInput(
@@ -314,35 +249,18 @@ export default function NumericInput({
       normalized === "." ||
       normalized === "-.";
 
-    // =========================
-    // 空欄を許可
-    // =========================
-
     if (
       isBlank &&
       allowEmpty
     ) {
-      setDisplayValue(
-        ""
-      );
-
-      setIsEditing(
-        false
-      );
-
+      setDisplayValue("");
+      setIsEditing(false);
       onEmpty?.();
-
       return;
     }
 
-    // =========================
-    // 空欄を許可しない
-    // =========================
-
     if (isBlank) {
-      if (
-        value !== null
-      ) {
+      if (value !== null) {
         normalized =
           String(value);
       } else if (
@@ -351,15 +269,12 @@ export default function NumericInput({
         normalized =
           String(min);
       } else {
-        normalized =
-          "0";
+        normalized = "0";
       }
     }
 
     let numericValue =
-      Number(
-        normalized
-      );
+      Number(normalized);
 
     if (
       !Number.isFinite(
@@ -367,18 +282,10 @@ export default function NumericInput({
       )
     ) {
       numericValue =
-        value ??
-        min ??
-        0;
+        value ?? min ?? 0;
     }
 
-    // =========================
-    // 最小値
-    // =========================
-
-    if (
-      min !== undefined
-    ) {
+    if (min !== undefined) {
       numericValue =
         Math.max(
           min,
@@ -386,23 +293,13 @@ export default function NumericInput({
         );
     }
 
-    // =========================
-    // 最大値
-    // =========================
-
-    if (
-      max !== undefined
-    ) {
+    if (max !== undefined) {
       numericValue =
         Math.min(
           max,
           numericValue
         );
     }
-
-    // =========================
-    // 整数項目
-    // =========================
 
     if (!allowDecimal) {
       numericValue =
@@ -411,12 +308,10 @@ export default function NumericInput({
         );
     }
 
-    // 親へ確定値を渡す
     onValueChange(
       numericValue
     );
 
-    // カンマ表示
     setDisplayValue(
       formatNumber(
         numericValue,
@@ -424,38 +319,25 @@ export default function NumericInput({
       )
     );
 
-    setIsEditing(
-      false
-    );
+    setIsEditing(false);
   };
-
-  // =========================
-  // フォーカスを外した時
-  // =========================
 
   const handleBlur = () => {
     commitValue();
   };
 
-  // =========================
-  // Enter / Escape
-  // =========================
-
   const handleKeyDown = (
     event: KeyboardEvent<HTMLInputElement>
   ) => {
     if (
-      event.key ===
-      "Enter"
+      event.key === "Enter"
     ) {
       event.preventDefault();
-
       inputRef.current?.blur();
     }
 
     if (
-      event.key ===
-      "Escape"
+      event.key === "Escape"
     ) {
       event.preventDefault();
 
@@ -466,50 +348,31 @@ export default function NumericInput({
         )
       );
 
-      setIsEditing(
-        false
-      );
-
+      setIsEditing(false);
       inputRef.current?.blur();
     }
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex min-w-0 items-center gap-2">
       <input
-        ref={
-          inputRef
-        }
-
+        ref={inputRef}
         type="text"
-
         inputMode={
           allowDecimal
             ? "decimal"
             : "numeric"
         }
-
-        value={
-          displayValue
-        }
-
-        onFocus={
-          handleFocus
-        }
-
-        onChange={
-          handleChange
-        }
-
-        onBlur={
-          handleBlur
-        }
-
+        value={displayValue}
+        placeholder={placeholder}
+        onFocus={handleFocus}
+        onChange={handleChange}
+        onBlur={handleBlur}
         onKeyDown={
           handleKeyDown
         }
-
         className={`
+          min-w-0
           w-full
           rounded-xl
           border
@@ -519,6 +382,7 @@ export default function NumericInput({
           text-lg
           outline-none
           transition
+          placeholder:text-slate-300
           focus:border-blue-500
           focus:ring-1
           focus:ring-blue-500
@@ -527,7 +391,7 @@ export default function NumericInput({
       />
 
       {suffix && (
-        <span className="whitespace-nowrap text-slate-700">
+        <span className="shrink-0 whitespace-nowrap text-slate-700">
           {suffix}
         </span>
       )}
