@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     siteName: "資産額シミュレーター",
     images: [
       {
-        url: "/og-image.png",
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "資産額シミュレーター",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     title: "資産額シミュレーター",
     description:
       "毎月の積立額や想定利回りから、将来の資産額をかんたんにシミュレーション。",
-    images: ["/og-image.png"],
+    images: ["/og-image.jpg"],
   },
 };
 
